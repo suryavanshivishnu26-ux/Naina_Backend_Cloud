@@ -1,9 +1,11 @@
 import os
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import base64
 from datetime import datetime
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Get API key from environment
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "your-groq-api-key-here")
@@ -119,9 +121,28 @@ def analyze_image():
         print(f"\n❌ {error_msg}\n")
         return jsonify({'error': error_msg}), 500
 
+@app.route('/', methods=['GET'])
+def home():
+    """Root endpoint - shows service info"""
+    return jsonify({
+        'service': 'NAINA VAI Backend',
+        'status': 'running',
+        'version': '1.0',
+        'endpoints': {
+            '/health': 'Health check',
+            '/analyze': 'POST - Analyze image',
+            '/get_result': 'GET - Get latest result'
+        }
+    }), 200
+
 @app.route('/health', methods=['GET'])
 def health_check():
-    return jsonify({'status': 'Server is running'}), 200
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'Server is running',
+        'service': 'NAINA VAI Backend',
+        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    }), 200
 
 @app.route('/test', methods=['POST'])
 def test_endpoint():
@@ -176,4 +197,3 @@ if __name__ == '__main__':
     # Run the server
     # Use 0.0.0.0 to accept connections from any IP
     app.run(host='0.0.0.0', port=port, debug=False)
-
