@@ -1,17 +1,18 @@
 import os
 from flask import Flask, request, jsonify
 import base64
-from groq import Groq
-import json
 from datetime import datetime
 
 app = Flask(__name__)
 
-# Initialize Groq client
-# Make sure to set your GROQ_API_KEY environment variable
-# or replace with your actual API key
+# Get API key from environment
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "your-groq-api-key-here")
-client = Groq(api_key=GROQ_API_KEY)
+
+# Don't initialize Groq client at import time - do it when needed
+def get_groq_client():
+    """Initialize Groq client only when needed"""
+    from groq import Groq
+    return Groq(api_key=GROQ_API_KEY)
 
 @app.route('/analyze', methods=['POST'])
 def analyze_image():
@@ -53,6 +54,9 @@ def analyze_image():
         
         # Create the message for Groq API
         print("\n🔄 Sending request to Groq API...")
+        
+        # Initialize Groq client here (not at module level)
+        client = get_groq_client()
         
         completion = client.chat.completions.create(
             model="meta-llama/llama-4-scout-17b-16e-instruct",  # Groq's vision model
